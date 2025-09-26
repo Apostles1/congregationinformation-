@@ -1,0 +1,132 @@
+            - name: Setup Node.js environment
+  uses: actions/setup-node@v5.0.0
+  with:
+    # Set always-auth in npmrc.
+    always-auth: # optional, default is false
+    # Version Spec of the version to use. Examples: 12.x, 10.15.1, >=10.15.0.
+    node-version: # optional
+    # File containing the version Spec of the version to use.  Examples: package.json, .nvmrc, .node-version, .tool-versions.
+    node-version-file: # optional
+    # Target architecture for Node to use. Examples: x86, x64. Will use system architecture by default.
+    architecture: # optional
+    # Set this option if you want the action to check for the latest available version that satisfies the version spec.
+    check-latest: # optional
+    # Optional registry to set up for auth. Will set the registry in a project level .npmrc and .yarnrc file, and set up auth to read in from env.NODE_AUTH_TOKEN.
+    registry-url: # optional
+    # Optional scope for authenticating against scoped registries. Will fall back to the repository owner when using the GitHub Packages registry (https://npm.pkg.github.com/).
+    scope: # optional
+    # Used to pull node distributions from node-versions. Since there's a default, this is typically not supplied by the user. When running this action on github.com, the default value is sufficient. When running on GHES, you can pass a personal access token for github.com if you are experiencing rate limiting.
+    token: # optional, default is ${{ github.server_url == 'https://github.com' && github.token || '' }}
+    # Used to specify a package manager for caching in the default directory. Supported values: npm, yarn, pnpm.
+    cache: # optional
+    # Set to false to disable automatic caching based on the package manager field in package.json. By default, caching is enabled if the package manager field is present.
+    package-manager-cache: # optional, default is true
+    # Used to specify the path to a dependency file: package-lock.json, yarn.lock, etc. Supports wildcards or a list of file names for caching multiple dependencies.
+    cache-dependency-path: # optional
+    # Used to specify an alternative mirror to downlooad Node.js binaries from
+    mirror: # optional
+    # The token used as Authorization header when fetching from the mirror
+    mirror-token: # optional
+                      - name: Setup .NET Core SDK
+  uses: actions/setup-dotnet@v5.0.0
+  with:
+    # Optional SDK version(s) to use. If not provided, will install global.json version when available. Examples: 2.2.104, 3.1, 3.1.x, 3.x, 6.0.2xx
+    dotnet-version: # optional
+    # Optional quality of the build. The possible values are: daily, signed, validated, preview, ga.
+    dotnet-quality: # optional
+    # Optional global.json location, if your global.json isn't located in the root of the repo.
+    global-json-file: # optional
+    # Optional package source for which to set up authentication. Will consult any existing NuGet.config in the root of the repo and provide a temporary NuGet.config using the NUGET_AUTH_TOKEN environment variable as a ClearTextPassword
+    source-url: # optional
+    # Optional OWNER for using packages from GitHub Package Registry organizations/users other than the current repository's owner. Only used if a GPR URL is also provided in source-url
+    owner: # optional
+    # Optional NuGet.config location, if your NuGet.config isn't located in the root of the repo.
+    config-file: # optional
+    # Optional input to enable caching of the NuGet global-packages folder
+    cache: # optional
+    # Used to specify the path to a dependency file: packages.lock.json. Supports wildcards or a list of file names for caching multiple dependencies.
+    cache-dependency-path: # optional
+                      - name: Setup .NET Core SDK
+  uses: actions/setup-dotnet@v5.0.0
+  with:
+    # Optional SDK version(s) to use. If not provided, will install global.json version when available. Examples: 2.2.104, 3.1, 3.1.x, 3.x, 6.0.2xx
+    dotnet-version: # optional
+    # Optional quality of the build. The possible values are: daily, signed, validated, preview, ga.
+    dotnet-quality: # optional
+    # Optional global.json location, if your global.json isn't located in the root of the repo.
+    global-json-file: # optional
+    # Optional package source for which to set up authentication. Will consult any existing NuGet.config in the root of the repo and provide a temporary NuGet.config using the NUGET_AUTH_TOKEN environment variable as a ClearTextPassword
+    source-url: # optional
+    # Optional OWNER for using packages from GitHub Package Registry organizations/users other than the current repository's owner. Only used if a GPR URL is also provided in source-url
+    owner: # optional
+    # Optional NuGet.config location, if your NuGet.config isn't located in the root of the repo.
+    config-file: # optional
+    # Optional input to enable caching of the NuGet global-packages folder
+    cache: # optional
+    # Used to specify the path to a dependency file: packages.lock.json. Supports wildcards or a list of file names for caching multiple dependencies.
+    cache-dependency-path: # optional
+                      - name: wipac-dev-project-action
+  # You may pin to the exact commit or the version.
+  # uses: WIPACrepo/wipac-dev-project-action@d8636a2c0b4321ca5e3bb37d4c3eaeeb7df01775
+  uses: WIPACrepo/wipac-dev-project-action@v1.0
+  with:
+    # a PAT with project write permissions
+    github_token: # default is 
+    # the organization of the project
+    organization: # default is 
+    # the id of the project (see url)
+    project_number: # default is 
+          # This workflow uses actions that are not certified by GitHub.
+# They are provided by a third-party and are governed by
+# separate terms of service, privacy policy, and support
+# documentation.
+
+# A sample workflow which checks out your Infrastructure as Code Configuration files,
+# such as Kubernetes, Helm & Terraform and scans them for any security issues.
+# The results are then uploaded to GitHub Security Code Scanning
+#
+# For more examples, including how to limit scans to only high-severity issues
+# and fail PR checks, see https://github.com/snyk/actions/
+
+name: Snyk Infrastructure as Code
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "main" ]
+  schedule:
+    - cron: '37 16 * * 5'
+
+permissions:
+  contents: read
+
+jobs:
+  snyk:
+    permissions:
+      contents: read # for actions/checkout to fetch code
+      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
+      actions: read # only required for a private repository by github/codeql-action/upload-sarif to get the Action run status
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Snyk to check configuration files for security issues
+        # Snyk can be used to break the build when it detects security issues.
+        # In this case we want to upload the issues to GitHub Code Scanning
+        continue-on-error: true
+        uses: snyk/actions/iac@14818c4695ecc4045f33c9cee9e795a788711ca4
+        env:
+          # In order to use the Snyk Action you will need to have a Snyk API token.
+          # More details in https://github.com/snyk/actions#getting-your-snyk-token
+          # or you can signup for free at https://snyk.io/login
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          # Add the path to the configuration file that you would like to test.
+          # For example `deployment.yaml` for a Kubernetes deployment manifest
+          # or `main.tf` for a Terraform configuration file
+          file: your-file-to-test.yaml
+      - name: Upload result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: snyk.sarif
